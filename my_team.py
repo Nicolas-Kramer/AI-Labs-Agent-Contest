@@ -152,11 +152,19 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         ghosts = [e for e in enemigos if not e.is_pacman and e.scared_timer == 0 and e.get_position() is not None]
         if any(self.get_maze_distance(my_pos, g.get_position()) <= 3 for g in ghosts):
             features['ghost_close'] = 1
+
+        # persigue mientras vuelve de ser matado
+        if not successor.get_agent_state(self.index).is_pacman:
+            invaders = [e for e in enemigos if e.is_pacman and e.get_position() is not None]
+            if invaders:
+                features['invader_distance'] = min(self.get_maze_distance(my_pos, a.get_position()) for a in invaders)
+        
         return features
 
     def get_weights(self, game_state, action):
         # más penalización en el ghost close y que recuerde de volver a casa
-        return {'successor_score': 100, 'distance_to_food': -1, 'ghost_close': -100, 'distance_to_home': -2}
+        return {'successor_score': 100, 'distance_to_food': -1, 
+                'ghost_close': -100, 'distance_to_home': -2, 'invader_distance': -5}
 
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
