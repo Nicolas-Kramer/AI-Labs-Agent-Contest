@@ -137,8 +137,11 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         features['successor_score'] = -len(food_list)  # self.getScore(successor)
 
         # Compute distance to the nearest food
-
-        if len(food_list) > 0:  # This should always be True,  but better safe than sorry
+        # pero vuelve a casa antes de que no sea demasiado tarde: (>3 de comida)
+        if game_state.get_agent_state(self.index).num_carrying >= 3:
+            my_pos = successor.get_agent_state(self.index).get_position()
+            features['distance_to_home'] = self.get_maze_distance(my_pos, self.start)
+        elif len(food_list) > 0:  # This should always be True,  but better safe than sorry
             my_pos = successor.get_agent_state(self.index).get_position()
             min_distance = min([self.get_maze_distance(my_pos, food) for food in food_list])
             features['distance_to_food'] = min_distance
@@ -152,8 +155,8 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
         return features
 
     def get_weights(self, game_state, action):
-        # más penalización en el ghost close
-        return {'successor_score': 100, 'distance_to_food': -1, 'ghost_close': -300}
+        # más penalización en el ghost close y que recuerde de volver a casa
+        return {'successor_score': 100, 'distance_to_food': -1, 'ghost_close': -100, 'distance_to_home': -2}
 
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
